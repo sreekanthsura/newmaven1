@@ -1,0 +1,25 @@
+node('built-in') 
+{
+    stage('continuousdownload') 
+    {
+        git 'https://github.com/intelliqittrainings/maven.git'
+    }
+    stage('continuousbuild') 
+    {
+        sh 'mvn package'
+    }
+     stage('continuousdeployment') 
+    {
+        deploy adapters: [tomcat9(credentialsId: 'bd2c6097-61e6-461f-a854-e9aa48d5a26f', path: '', url: 'http://172.31.44.109:8080')], contextPath: 'mytestapp', war: '**/*.war'
+    }
+    stage('continuoustesting') 
+    {
+        git 'https://github.com/intelliqittrainings/FunctionalTesting.git'
+        sh 'java -jar /home/ubuntu/.jenkins/workspace/p2/testing.jar'
+    }
+    stage('continuousdelivery') 
+    {
+        input message: 'need approval from DM!', submitter: 'srinivas'
+        deploy adapters: [tomcat9(credentialsId: 'bd2c6097-61e6-461f-a854-e9aa48d5a26f', path: '', url: 'http://172.31.34.141:8080')], contextPath: 'myprodapp', war: '**/*.war'
+    }
+}
